@@ -11,7 +11,14 @@ def main():
         'path': 'test.txt',
         'content': f'Hello World: {time.time()}',
     })
-    print(file_config)
+    database_config: TargetConfig = target('postgresql/db', {
+        'database_name': 'test_db',
+        'host': 'localhost',
+        'port': 5432,
+        'user': 'postgres',
+        'password': 'postgres',
+        'default_database': 'postgres'
+    })
 
 
 if __name__ == '__main__':

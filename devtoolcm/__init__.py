@@ -1,5 +1,5 @@
 # import target handlers to self-register them
-import devtoolcm.target.file
+import devtoolcm.target
 
 # other imports
 from devtoolcm.core.factory import get_target_configurer

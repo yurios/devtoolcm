@@ -8,26 +8,26 @@ from devtoolcm.util import get_logger
 log = get_logger()
 
 
-def namer(target_config: TargetConfig) -> str:
-    return target_config['path']
+def name(expected_target: TargetConfig) -> str:
+    return expected_target['path']
 
 
-def creator(target_config: TargetConfig) -> TargetConfig:
+def create(expected_target: TargetConfig) -> TargetConfig:
     try:
-        with open(target_config['path'], "w") as file:
-            file.write(target_config['content'])
-        return target_config
+        with open(expected_target['path'], "w") as file:
+            file.write(expected_target['content'])
+        return expected_target
     except Exception as e:
         log.error(f"Error creating the file: {e}")
         exit(1)
 
 
-def reader(target_config: TargetConfig) -> Optional[TargetConfig]:
+def read(expected_target: TargetConfig) -> Optional[TargetConfig]:
     try:
-        with open(target_config['path'], "r") as file:
+        with open(expected_target['path'], "r") as file:
             content = file.read()
         return {
-            'path': target_config['path'],
+            'path': expected_target['path'],
             'content': content
         }
     except FileNotFoundError:
@@ -37,19 +37,23 @@ def reader(target_config: TargetConfig) -> Optional[TargetConfig]:
         exit(1)
 
 
-def updater(target_config: TargetConfig) -> TargetConfig:
-    try:
-        with open(target_config['path'], "w") as file:
-            file.write(target_config['content'])
-        return target_config
-    except Exception as e:
-        log.error(f"Error replacing the file content: {e}")
-        exit(1)
+def update(expected_target: TargetConfig, existing_target: TargetConfig) -> TargetConfig:
+    if expected_target['path'] != existing_target['path']:
+        delete(existing_target)
+        create(expected_target)
+    if expected_target['content'] != existing_target['content']:
+        try:
+            with open(expected_target['path'], "w") as file:
+                file.write(expected_target['content'])
+            return expected_target
+        except Exception as e:
+            log.error(f"Error replacing the file content: {e}")
+            exit(1)
 
 
-def deleter(target_config: TargetConfig) -> None:
+def delete(existing_target: TargetConfig) -> None:
     try:
-        os.remove(target_config['path'])
+        os.remove(existing_target['path'])
         return None
     except FileNotFoundError:
         pass
@@ -58,21 +62,21 @@ def deleter(target_config: TargetConfig) -> None:
         exit(1)
 
 
-def comparator(expected: TargetConfig, existing: TargetConfig) -> List[str]:
+def compare(expected_target: TargetConfig, existing_target: TargetConfig) -> List[str]:
     difference = []
-    if expected['path'] != existing['path']:
-        difference.append(f"Path should be {expected['path']}")
-    if expected['content'] != existing['content']:
-        difference.append(f"Content should be {expected['content']}")
+    if expected_target['path'] != existing_target['path']:
+        difference.append(f"Path should be {expected_target['path']}")
+    if expected_target['content'] != existing_target['content']:
+        difference.append(f"Content should be {expected_target['content']}")
     return difference
 
 
-file_configurer = create_target_configurer(
+create_target_configurer(
     target_type='core/file',
-    instance_namer=namer,
-    creator=creator,
-    reader=reader,
-    updater=updater,
-    deleter=deleter,
-    comparator=comparator,
+    name=name,
+    create=create,
+    read=read,
+    update=update,
+    delete=delete,
+    compare=compare,
 )

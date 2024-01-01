@@ -5,10 +5,10 @@ from typing import Optional
 
 # type definitions
 TargetConfig = Dict[str, 'Config']
-TargetInstanceNamer = Callable[[TargetConfig], str]
-TargetCreator = Callable[[TargetConfig], TargetConfig]
-TargetReader = Callable[[TargetConfig], Optional[TargetConfig]]
-TargetUpdater = Callable[[TargetConfig], TargetConfig]
-TargetDeleter = Callable[[TargetConfig], None]
-TargetComparator = Callable[[TargetConfig, TargetConfig], List[str]]
+TargetName = Callable[[TargetConfig], str]
+TargetCreate = Callable[[TargetConfig], TargetConfig]
+TargetRead = Callable[[TargetConfig], Optional[TargetConfig]]
+TargetUpdate = Callable[[TargetConfig, TargetConfig], TargetConfig]
+TargetDelete = Callable[[TargetConfig], None]
+TargetCompare = Callable[[TargetConfig, TargetConfig], List[str]]
 TargetConfigurer = Callable[[TargetConfig], TargetConfig]

@@ -1,0 +1,2 @@
+PyGreSQL==6.0
+pip-licenses==4.3.3

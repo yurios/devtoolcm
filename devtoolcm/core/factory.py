@@ -1,11 +1,11 @@
-from devtoolcm.core.types import TargetComparator
+from devtoolcm.core.types import TargetCompare
 from devtoolcm.core.types import TargetConfig
 from devtoolcm.core.types import TargetConfigurer
-from devtoolcm.core.types import TargetCreator
-from devtoolcm.core.types import TargetDeleter
-from devtoolcm.core.types import TargetInstanceNamer
-from devtoolcm.core.types import TargetReader
-from devtoolcm.core.types import TargetUpdater
+from devtoolcm.core.types import TargetCreate
+from devtoolcm.core.types import TargetDelete
+from devtoolcm.core.types import TargetName
+from devtoolcm.core.types import TargetRead
+from devtoolcm.core.types import TargetUpdate
 
 from devtoolcm.util import get_logger
 
@@ -31,34 +31,34 @@ def register_target_configurer(target_type: str, target_configurer: TargetConfig
 
 def create_target_configurer(
         target_type: str,
-        instance_namer: TargetInstanceNamer,
-        creator: TargetCreator,
-        reader: TargetReader,
-        updater: TargetUpdater,
-        deleter: TargetDeleter,
-        comparator: TargetComparator,
+        name: TargetName,
+        create: TargetCreate,
+        read: TargetRead,
+        update: TargetUpdate,
+        delete: TargetDelete,
+        compare: TargetCompare,
 ):
     log = get_logger(2)
 
-    def target_configurer(target_config: TargetConfig) -> TargetConfig:
-        target_instance_name = f"{target_type}({instance_namer(target_config)})"
-        log.info(f"{target_instance_name}: Looking for a target...")
-        existing_target_config = reader(target_config)
-        if not existing_target_config:
-            log.info(f"{target_instance_name}: Target does not exist. Creating...")
-            existing_target_config = creator(target_config)
-            log.info(f"{target_instance_name}: Target created")
-            return existing_target_config
-        difference = comparator(target_config, existing_target_config)
+    def target_configurer(expected_target: TargetConfig) -> TargetConfig:
+        target_name = f"{target_type}[{name(expected_target)}]"
+        log.info(f"{target_name}: Looking for a target...")
+        existing_target = read(expected_target)
+        if not existing_target:
+            log.info(f"{target_name}: Target does not exist. Creating...")
+            existing_target = create(expected_target)
+            log.info(f"{target_name}: Target created")
+            return existing_target
+        difference = compare(expected_target, existing_target)
         if difference:
-            log.info(f"{target_instance_name}: Existing target does not match expected state:")
+            log.info(f"{target_name}: Existing target does not match expected state:")
             for diff in difference:
-                log.info(f"{target_instance_name}: - {diff}")
-            log.info(f"{target_instance_name}: Updating existing target...")
-            existing_target_config = updater(target_config)
-            log.info(f"{target_instance_name}: Target updated")
-            return existing_target_config
-        log.info(f"{target_instance_name}: Target is in the expected state")
-        return existing_target_config
+                log.info(f"{target_name}: - {diff}")
+            log.info(f"{target_name}: Updating existing target...")
+            existing_target = update(expected_target, existing_target)
+            log.info(f"{target_name}: Target updated")
+            return existing_target
+        log.info(f"{target_name}: Target is in the expected state")
+        return existing_target
 
     register_target_configurer(target_type, target_configurer)
